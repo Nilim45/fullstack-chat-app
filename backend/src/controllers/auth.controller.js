@@ -1,6 +1,7 @@
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+// Keep cloudinary import (in case you use it later)
 import cloudinary from "../lib/cloudinary.js";
 
 export const signup = async (req, res) => {
@@ -85,6 +86,7 @@ export const logout = (req, res) => {
   }
 };
 
+// ✅ FIXED: Save profilePic URL directly instead of uploading to Cloudinary
 export const updateProfile = async (req, res) => {
   try {
     const { profilePic } = req.body;
@@ -94,16 +96,16 @@ export const updateProfile = async (req, res) => {
       return res.status(400).json({ message: "Profile pic is required" });
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    // Save the provided image URL directly to user document
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePic: uploadResponse.secure_url },
+      { profilePic },
       { new: true }
     );
 
     res.status(200).json(updatedUser);
   } catch (error) {
-    console.log("error in update profile:", error);
+    console.log("error in update profile:", error.message);
     res.status(500).json({ message: "Internal server error" });
   }
 };
